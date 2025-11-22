@@ -1,0 +1,62 @@
+.form-errors-block {
+    margin: 1rem 0;
+}
+
+.error-card {
+    display: flex;
+    align-items: flex-start;
+    background: #fff5f5;
+    border: 1px solid #fc8181;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    animation: slideIn 0.3s ease;
+}
+
+.error-card.field-error {
+    background: #fef5e7;
+    border-color: #ed8936;
+    border-left-color: #ed8936;
+}
+
+.error-icon {
+    margin-right: 1rem;
+    color: #e53e3e;
+}
+
+.field-error .error-icon {
+    color: #ed8936;
+}
+
+.error-icon i {
+    font-size: 1.3rem;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-title {
+    font-weight: 600;
+    margin: 0 0 0.3rem 0;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.error-message {
+    margin: 0.2rem 0;
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

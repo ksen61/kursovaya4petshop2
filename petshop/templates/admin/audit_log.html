@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Админ: Логи{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/auditlog.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<div class="summary-header">
+    <a href="{% url 'admin_reports' %}" class="back-link"><i class="fas fa-arrow-left"></i> Назад</a>
+    <h1>Логи действий</h1>
+</div>
+
+<div class="table-container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Время</th>
+                <th>Пользователь</th>
+                <th>Таблица</th>
+                <th>ID записи</th>
+                <th>Действие</th>
+                <th>Старые данные</th>
+                <th>Новые данные</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.action_time }}</td>
+                <td>{{ log.user }}</td>
+                <td>{{ log.table_name }}</td>
+                <td>{{ log.row_id }}</td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.old_data }}</td>
+                <td>{{ log.new_data }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

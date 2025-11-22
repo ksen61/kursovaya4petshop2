@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}О нас | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/about.css' %}" type="text/css">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'index' %}">Главная</a> &gt; 
+    <span>О нас</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="about-hero">
+    <div class="container">
+        <h1 class="page-title">Давайте познакомимся</h1>
+        <p class="hero-subtitle">Yes of Кусь — это больше чем просто магазин</p>
+    </div>
+</div>
+
+<main class="about-main">
+    <section class="about-mission">
+        <div class="container">
+            <div class="mission-content">
+                <div class="mission-text">
+                    <h2>Наша миссия</h2>
+                    <p>Мы создаём мир, где каждый питомец получает лучшее, а его хозяин — удовольствие от покупок. Наша цель — сделать заботу о животных простой, приятной и доступной.</p>
+                    <div class="mission-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">5+</span>
+                            <span class="stat-label">лет на рынке</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">довольных клиентов</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">товаров в ассортименте</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mission-image">
+                    <img src="{% static 'img/about-pets.jpg' %}" alt="Наши клиенты" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-values">
+        <div class="container">
+            <h2 class="section-title">Наши ценности</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-star"></i></div>
+                    <h3>Качество</h3>
+                    <p>Тщательный отбор каждого товара, работа только с проверенными поставщиками</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-heart"></i></div>
+                    <h3>Забота</h3>
+                    <p>Мы понимаем потребности ваших питомцев и предлагаем оптимальные решения</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                    <h3>Ответственность</h3>
+                    <p>Честность и прозрачность во всех аспектах нашей работы</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3>Инновации</h3>
+                    <p>Постоянное развитие и внедрение новых технологий для вашего удобства</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-team">
+        <div class="container">
+            <h2 class="section-title">Наша команда</h2>
+            <p class="team-description">Профессионалы, объединённые любовью к животным и стремлением сделать ваш опыт покупок идеальным</p>
+
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="{% static 'img/team1.jpg' %}" alt="Анна, основатель" />
+                        <div class="member-social">
+                            <a href="#"><i class="fab fa-vk"></i></a>
+                            <a href="#"><i class="fab fa-telegram"></i></a>
+                        </div>
+                    </div>
+                    <h3>Анна</h3>
+                    <p>Основатель и директор</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="{% static 'img/team2.jpg' %}" alt="Максим, менеджер" />
+                        <div class="member-social">
+                            <a href="#"><i class="fab fa-vk"></i></a>
+                            <a href="#"><i class="fab fa-telegram"></i></a>
+                        </div>
+                    </div>
+                    <h3>Максим</h3>
+                    <p>Менеджер по закупкам</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-photo">
+                        <img src="{% static 'img/team3.jpg' %}" alt="Елена, поддержка" />
+                        <div class="member-social">
+                            <a href="#"><i class="fab fa-vk"></i></a>
+                            <a href="#"><i class="fab fa-telegram"></i></a>
+                        </div>
+                    </div>
+                    <h3>Елена</h3>
+                    <p>Руководитель поддержки</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Готовы сделать покупку?</h2>
+                <p>Присоединяйтесь к тысячам довольных клиентов Yes of Кусь</p>
+                <a href="/catalog/" class="btn"><i class="fas fa-paw"></i> Перейти в каталог</a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

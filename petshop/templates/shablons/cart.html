@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/cart.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 0;">
+    <div class="container">
+        <a href="{% url 'index' %}">Главная</a> &gt; 
+        <span>Корзина</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="cart-container"
+     data-product-list-url="{% url 'product_list' %}"
+     data-checkout-url="{% url 'checkout' %}">
+     <h1 class="cart-title">Ваша корзина</h1>
+    <div class="container">
+        
+        <div class="cart-wrapper">
+            <div class="cart-items-header">
+                <div class="header-product">Товар</div>
+                <div class="header-price">Цена</div>
+                <div class="header-quantity">Количество</div>
+                <div class="header-total">Сумма</div>
+                <div class="header-actions"></div>
+            </div>
+
+            <section class="cart-items-list" id="cart-items-list"></section>
+            <div class="cart-summary" id="cart-summary"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/cart.js' %}" defer></script>
+{% endblock %}

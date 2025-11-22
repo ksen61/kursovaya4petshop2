@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Личный кабинет | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/profile.css' %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 0px;">
+    <div class="container">
+        <a href="{% url 'index' %}">Главная</a> &gt;
+        <span>Личный кабинет</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container container2">
+
+    <section class="profile-section profile-info">
+        <h2>Информация профиля</h2>
+
+        <form id="profile-form" class="profile-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first_name">Имя</label>
+                <input type="text" id="first_name" name="first_name" placeholder="Введите имя" required />
+                <div class="error-message" id="error-first_name"></div>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Фамилия</label>
+                <input type="text" id="last_name" name="last_name" placeholder="Введите фамилию" required />
+                <div class="error-message" id="error-last_name"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Введите email" required />
+                <div class="error-message" id="error-email"></div>
+            </div>
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" placeholder="+7XXXXXXXXXX" />
+                <div class="error-message" id="error-phone"></div>
+            </div>
+            <div class="form-group">
+                <label for="date_of_birth">Дата рождения</label>
+                <input type="text" id="date_of_birth" name="date_of_birth" placeholder="ДД.ММ.ГГГГ" />
+                <div class="error-message" id="error-date_of_birth"></div>
+            </div>            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="theme" name="theme">
+                    Включить тёмную тему
+                </label>
+                <label for="date_of_birth">Формат даты</label>
+                <select id="date_format" name="date_format">
+                    <option value="%d.%m.%Y">ДД.ММ.ГГГГ</option>
+                    <option value="%Y.%m.%d">ГГГГ.ММ.ДД</option>
+                    <option value="%m/%d/%Y">ММ/ДД/ГГГГ</option>
+                </select>
+            </div>
+              
+            <button type="submit" class="btn-submit">Сохранить изменения</button>
+            <div id="profile-message" class="profile-message"></div>
+        </form>
+
+        <div style="margin-top: 1rem; display:flex; justify-content: space-between;">
+            <button id="logout-btn" class="btn-submit" style="background-color: #e74c3c; width: 48%">Выйти</button>
+            <button id="delete-btn" class="btn-submit" style="background-color: #c0392b; width: 48%">Удалить аккаунт</button>
+        </div>
+        <section class="profile-section1" style="margin-top: 40px;">
+            <a href="{% url 'order_list' %}" class="btn-submit" style="width: 100%; text-align: center;">
+                История заказов
+            </a>
+        </section>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/profile.js' %}"></script>
+    
+{% endblock %}

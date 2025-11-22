@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Вход | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/profile.css' %}" type="text/css"/>
+
+<style>
+.error-message {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 2px;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 220px;">
+    <a href="{% url 'index' %}">Главная</a> &gt;
+    <span>Вход</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Вход в аккаунт</h1>
+            <p>Введите свои учетные данные</p>
+        </div>
+        
+        <form id="login-form" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Электронная почта</label>
+                <input type="email" name="email" required>
+                <div class="error-message" id="error-email"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" name="password" required>
+                <div class="error-message" id="error-password"></div>
+            </div>
+            
+            <button type="submit" class="btn-submit">Войти</button>
+            
+            <div class="auth-footer">
+                Ещё нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>
+            </div>
+        </form>
+
+        <div id="login-message" class="auth-error" style="display:none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/login.js' %}"></script>
+{% endblock %}

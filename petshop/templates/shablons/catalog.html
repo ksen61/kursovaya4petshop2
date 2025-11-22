@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог товаров | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/catalog.css' %}" type="text/css" />
+<link rel="stylesheet" href="{% static 'style/filter.css' %}" type="text/css" />
+<link rel="stylesheet" href="{% static 'style/catalogs.css' %}" type="text/css" />
+
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 30px 0px 0px 0px;">
+    <div class="container1">
+        <a href="{% url 'index' %}">Главная</a> &gt;
+        <span>Каталог</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<main class="main catalog-page">
+    <h1 class="page-title" style="margin: 20px 50px;">Каталог товаров</h1>
+    
+    <div class="sorting-controls">
+        <label for="sort-by">Сортировка:</label>
+        <select id="sort-by" name="sort">
+            <option value="">По умолчанию</option>
+            <option value="price_asc">По цене (возрастание)</option>
+            <option value="price_desc">По цене (убывание)</option>
+            <option value="name_asc">По названию (А-Я)</option>
+            <option value="name_desc">По названию (Я-А)</option>
+        </select>
+    </div>
+
+    <div class="catalog-layout">
+        
+        <aside class="filters-sidebar">
+            <form id="filters-form">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="search_name" class="form-label">Поиск по названию</label>
+                    <input type="text" name="search_name" id="search_name" class="form-control">
+                </div>
+
+                <h5 class="mb-3">Фильтры</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">Категории</label>
+                    {% for category in all_categories %}
+                    <div>
+                        <input type="checkbox" name="category" value="{{ category.id }}" id="category_{{ category.id }}">
+                        <label for="category_{{ category.id }}">{{ category.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Бренды</label>
+                    {% for brand in all_brands %}
+                    <div>
+                        <input type="checkbox" name="brand" value="{{ brand.id }}" id="brand_{{ brand.id }}">
+                        <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Возраст</label>
+                    {% for age in all_ages %}
+                    <div>
+                        <input type="checkbox" name="age" value="{{ age.id }}" id="age_{{ age.id }}">
+                        <label for="age_{{ age.id }}">{{ age.age_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Вид животного</label>
+                    {% for species in all_species %}
+                    <div>
+                        <input type="checkbox" name="species" value="{{ species.id }}" id="species_{{ species.id }}">
+                        <label for="species_{{ species.id }}">{{ species.species_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Тип</label>
+                    {% for type in all_types %}
+                    <div>
+                        <input type="checkbox" name="type" value="{{ type.id }}" id="type_{{ type.id }}">
+                        <label for="type_{{ type.id }}">{{ type.type_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Назначение</label>
+                    {% for purpose in all_purposes %}
+                    <div>
+                        <input type="checkbox" name="purpose" value="{{ purpose.id }}" id="purpose_{{ purpose.id }}">
+                        <label for="purpose_{{ purpose.id }}">{{ purpose.purpose_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="price_min">Цена от</label>
+                    <input type="number" step="0.01" name="price_min" id="price_min" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="price_max">Цена до</label>
+                    <input type="number" step="0.01" name="price_max" id="price_max" class="form-control">
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100 mb-2"><i class="fas fa-filter"></i> Применить</button>
+                    <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100"><i class="fas fa-times-circle"></i> Сбросить</button>
+                </div>
+            </form>
+        </aside>
+
+        <section class="products-grid" id="products-grid">
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/catalog.js' %}" defer></script>
+{% endblock %}

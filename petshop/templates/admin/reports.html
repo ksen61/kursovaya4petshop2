@@ -1,0 +1,450 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Админ: Отчёты{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/reports.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<h1>Раздел отчетов администратора</h1>
+
+<div class="reports-rows">
+    <div class="reports-row">
+        <a href="/reports/summaries/by_category/" class="report-card">
+            <h2>Сводные таблицы</h2>
+            <p>Просмотр сводных таблиц по категориям, брендам, месяцам</p>
+        </a>
+        
+        <a href="{% url 'admin_statement' %}" class="report-card">
+            <h2>Сформировать новый отчет</h2>
+            <p>Создать отчет с фильтрацией и нужными параметрами</p>
+        </a>
+
+        <a href="{% url 'sales_charts' %}" class="report-card">
+            <h2>Просмотр диаграмм</h2>
+            <p>Графики продаж по категориям и месяцам</p>
+        </a>
+    </div>
+
+    <div class="reports-row">
+        <a href="{% url 'audit_log' %}" class="report-card">
+            <h2>Просмотр логов действий</h2>
+            <p>История действий пользователей в системе</p>
+        </a>
+        
+        <div class="report-card" onclick="showBackupModal()">
+            <h2>Резервное копирование</h2>
+            <p>Создать резервную копию базы данных</p>
+        </div>
+
+        <div class="report-card" onclick="showRestoreModal()">
+            <h2>Восстановление</h2>
+            <p>Восстановить базу данных из резервной копии</p>
+        </div>
+    </div>
+
+    <div class="reports-row">
+        <div class="report-card" onclick="showManageBackupsModal()">
+            <h2>Управление бэкапами</h2>
+            <p>Просмотр и скачивание существующих резервных копий</p>
+        </div>
+        <div class="report-card" onclick="showImportUsersModal()">
+            <h2>Импорт пользователей</h2>
+            <p>Загрузить пользователей из файла (CSV или JSON)</p>
+        </div>
+    
+        <div class="report-card" onclick="showExportUsersModal()">
+            <h2>Экспорт пользователей</h2>
+            <p>Сохранить список пользователей в файл</p>
+        </div>
+    </div>
+</div>
+<div id="importUsersModal" class="modal">
+    <div class="modal-content">
+        <h2>Импорт пользователей</h2>
+        <form id="importUsersForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="users_file" accept=".csv,.json" required>
+            <div class="modal-buttons">
+                <button type="submit" class="modal-btn confirm">Импортировать</button>
+                <button type="button" class="modal-btn cancel" onclick="closeImportUsersModal()">Отмена</button>
+            </div>
+        </form>
+        <div id="importUsersStatus" class="backup-status"></div>
+    </div>
+</div>
+
+<div id="exportUsersModal" class="modal">
+    <div class="modal-content">
+        <h2>Экспорт пользователей</h2>
+        <p>Экспортировать список пользователей в JSON файл:</p>
+        <div class="modal-buttons">
+            <button class="modal-btn confirm" onclick="exportUsers()">Экспорт в JSON</button>
+            <button class="modal-btn cancel" onclick="closeExportUsersModal()">Отмена</button>
+        </div>
+        <div id="exportUsersStatus" class="backup-status"></div>
+    </div>
+</div>
+<div id="backupModal" class="modal">
+    <div class="modal-content">
+        <h2>Резервное копирование базы данных</h2>
+        <p>Вы уверены, что хотите создать резервную копию базы данных?</p>
+        <div class="modal-buttons">
+            <button class="modal-btn confirm" onclick="createBackup()">Создать бэкап</button>
+            <button class="modal-btn cancel" onclick="closeBackupModal()">Отмена</button>
+        </div>
+        <div id="backupStatus" class="backup-status"></div>
+    </div>
+</div>
+
+<div id="restoreModal" class="modal">
+    <div class="modal-content">
+        <h2>Восстановление базы данных</h2>
+        <p>Внимание! Восстановление перезапишет текущие данные.</p>
+        <form id="restoreForm" class="backup-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="backup_file" accept=".zip,.json,.sql" required>
+            <div class="modal-buttons">
+                <button type="submit" class="modal-btn confirm">Восстановить</button>
+                <button type="button" class="modal-btn cancel" onclick="closeRestoreModal()">Отмена</button>
+            </div>
+        </form>
+        <div id="restoreStatus" class="backup-status"></div>
+    </div>
+</div>
+
+<div id="manageBackupsModal" class="modal">
+    <div class="modal-content" style="max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+        <div style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
+            <h2>Управление резервными копиями</h2>
+            <div id="backupsList">
+                <p>Загрузка списка бэкапов...</p>
+            </div>
+            
+            <div id="manageStatus" class="backup-status" style="display: none; margin-top: 20px;"></div>
+        </div>
+        
+        <div class="modal-buttons" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #eee;">
+            <button class="modal-btn cancel" onclick="closeManageBackupsModal()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function showImportUsersModal() {
+        document.getElementById('importUsersModal').style.display = 'flex';
+    }
+    
+    function closeImportUsersModal() {
+        document.getElementById('importUsersModal').style.display = 'none';
+        document.getElementById('importUsersStatus').style.display = 'none';
+    }
+    
+    document.getElementById('importUsersForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const statusDiv = document.getElementById('importUsersStatus');
+        statusDiv.textContent = 'Импорт выполняется...';
+        statusDiv.className = 'backup-status';
+        statusDiv.style.display = 'block';
+    
+        const formData = new FormData(this);
+        fetch("{% url 'api_import_users' %}", {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            statusDiv.textContent = data.message;
+            statusDiv.className = 'backup-status ' + (data.success ? 'success' : 'error');
+            if (data.success) setTimeout(() => closeImportUsersModal(), 2000);
+        })
+        .catch(err => {
+            statusDiv.textContent = 'Ошибка: ' + err;
+            statusDiv.className = 'backup-status error';
+        });
+    });
+    
+    function showExportUsersModal() {
+        document.getElementById('exportUsersModal').style.display = 'flex';
+    }
+    
+    function closeExportUsersModal() {
+        document.getElementById('exportUsersModal').style.display = 'none';
+        document.getElementById('exportUsersStatus').style.display = 'none';
+    }
+    
+    function exportUsers() {
+        const statusDiv = document.getElementById('exportUsersStatus');
+        statusDiv.textContent = 'Подготовка экспорта...';
+        statusDiv.className = 'backup-status';
+        statusDiv.style.display = 'block';
+    
+        console.log('Starting JSON export');
+    
+        fetch("{% url 'api_export_users' %}", {
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                return response.text().then(errorText => {
+                    console.error('Error response:', errorText);
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        throw new Error(errorData.message || `Ошибка ${response.status}`);
+                    } catch {
+                        throw new Error(errorText || `Ошибка HTTP: ${response.status}`);
+                    }
+                });
+            }
+    
+            return response.blob();
+        })
+        .then(blob => {
+            if (!blob || blob.size === 0) {
+                throw new Error('Получен пустой ответ от сервера');
+            }
+    
+            console.log('Blob received, size:', blob.size, 'type:', blob.type);
+    
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g,'-').slice(0, -5);
+            a.download = `users_export_${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+    
+            statusDiv.textContent = 'Экспорт успешно завершён';
+            statusDiv.className = 'backup-status success';
+            
+            setTimeout(() => closeExportUsersModal(), 2000);
+        })
+        .catch(err => {
+            console.error('Export error:', err);
+            statusDiv.textContent = 'Ошибка: ' + err.message;
+            statusDiv.className = 'backup-status error';
+        });
+    }
+
+    function showBackupModal() {
+        document.getElementById('backupModal').style.display = 'flex';
+    }
+
+    function closeBackupModal() {
+        const modal = document.getElementById('backupModal');
+        modal.style.display = 'none';
+        const status = document.getElementById('backupStatus');
+        status.style.display = 'none';
+    }
+
+    function showRestoreModal() {
+        document.getElementById('restoreModal').style.display = 'flex';
+    }
+
+    function closeRestoreModal() {
+        const modal = document.getElementById('restoreModal');
+        modal.style.display = 'none';
+        const status = document.getElementById('restoreStatus');
+        status.style.display = 'none';
+    }
+
+    function showManageBackupsModal() {
+        document.getElementById('manageBackupsModal').style.display = 'flex';
+        loadBackupsList();
+    }
+
+    function closeManageBackupsModal() {
+        document.getElementById('manageBackupsModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.id === 'backupModal') closeBackupModal();
+        if (event.target.id === 'restoreModal') closeRestoreModal();
+        if (event.target.id === 'manageBackupsModal') closeManageBackupsModal();
+    }
+
+    function createBackup() {
+        const statusDiv = document.getElementById('backupStatus');
+        statusDiv.style.display = 'none';
+
+        fetch("{% url 'api_create_backup' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Ошибка сервера при создании бэкапа');
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g,'-');
+            a.download = `backup_${timestamp}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            statusDiv.textContent = 'Бэкап успешно создан и скачан';
+            statusDiv.className = 'backup-status success';
+            statusDiv.style.display = 'block';
+
+            setTimeout(loadBackupsList, 1000);
+        })
+        .catch(err => {
+            statusDiv.textContent = err;
+            statusDiv.className = 'backup-status error';
+            statusDiv.style.display = 'block';
+        });
+    }
+
+    document.getElementById('restoreForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fileInput = this.querySelector('input[name="backup_file"]');
+        if (!fileInput.files.length) return alert('Выберите файл для восстановления');
+
+        const statusDiv = document.getElementById('restoreStatus');
+        statusDiv.textContent = 'Восстановление...';
+        statusDiv.className = 'backup-status';
+        statusDiv.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('backup_file', fileInput.files[0]);
+
+        fetch("{% url 'api_restore_backup' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            statusDiv.textContent = data.message;
+            statusDiv.className = 'backup-status ' + (data.success ? 'success' : 'error');
+            if (data.success) setTimeout(() => location.reload(), 2000);
+        })
+        .catch(err => {
+            statusDiv.textContent = 'Ошибка при восстановлении: ' + err;
+            statusDiv.className = 'backup-status error';
+        });
+    });
+
+    let userDateFormat = "%d.%m.%Y";
+
+    async function loadProfileFormat() {
+        try {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const res = await fetch('/api/profile/', { headers: {'X-CSRFToken': csrftoken} });
+            if (!res.ok) throw new Error('Не удалось получить профиль');
+            const data = await res.json();
+            userDateFormat = data.date_format || "%d.%m.%Y";
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
+    function formatDateByProfile(timestamp) {
+        const date = new Date(timestamp * 1000);
+        const day = ('0' + date.getDate()).slice(-2);
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const year = date.getFullYear();
+        const hours = ('0' + date.getHours()).slice(-2);
+        const minutes = ('0' + date.getMinutes()).slice(-2);
+        const seconds = ('0' + date.getSeconds()).slice(-2);
+    
+        let formattedDate;
+        switch(userDateFormat) {
+            case "%d.%m.%Y":
+                formattedDate = `${day}.${month}.${year}`;
+                break;
+            case "%Y.%m.%d":
+                formattedDate = `${year}.${month}.${day}`;
+                break;
+            case "%m/%d/%Y":
+                formattedDate = `${month}/${day}/${year}`;
+                break;
+            default:
+                formattedDate = `${day}.${month}.${year}`;
+        }
+    
+        return `${formattedDate} ${hours}:${minutes}:${seconds}`;
+    }
+    
+    async function loadBackupsList() {
+        await loadProfileFormat();
+        fetch("{% url 'api_list_backups' %}")
+        .then(res => res.json())
+        .then(data => {
+            const backupsList = document.getElementById('backupsList');
+            if (data.success && data.backups.length) {
+                let html = '<table class="backup-table"><tr><th>Имя файла</th><th>Размер</th><th>Дата создания</th><th>Действия</th></tr>';
+                data.backups.forEach(b => {
+                    const sizeMB = (b.size / (1024*1024)).toFixed(2);
+                    const date = formatDateByProfile(b.created);
+                    html += `
+                        <tr>
+                            <td>${b.name}</td>
+                            <td>${sizeMB} MB</td>
+                            <td>${date}</td>
+                            <td>
+                                <button class="download-btn" onclick="downloadBackup('${b.name}')">Скачать</button>
+                                <button class="restore-btn" onclick="restoreFromList('${b.name}')">Восстановить</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += '</table>';
+                backupsList.innerHTML = html;
+            } else {
+                backupsList.innerHTML = '<p>Резервные копии не найдены</p>';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('backupsList').innerHTML = '<p>Ошибка загрузки списка бэкапов</p>';
+        });
+    }
+
+    function downloadBackup(filename) {
+        window.location.href = `/media/backups/${filename}`;
+    }
+
+    function restoreFromList(filename) {
+        if (!confirm(`Восстановить базу из ${filename}? Это перезапишет текущие данные.`)) return;
+
+        const statusDiv = document.getElementById('restoreStatus');
+        statusDiv.textContent = 'Восстановление...';
+        statusDiv.className = 'backup-status';
+        statusDiv.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('filename', filename);
+
+        fetch("{% url 'api_restore_backup' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            statusDiv.textContent = data.message;
+            statusDiv.className = 'backup-status ' + (data.success ? 'success' : 'error');
+            if (data.success) setTimeout(() => location.reload(), 2000);
+        })
+        .catch(err => {
+            statusDiv.textContent = 'Ошибка при восстановлении: ' + err;
+            statusDiv.className = 'backup-status error';
+        });
+    }
+</script>
+{% endblock %}

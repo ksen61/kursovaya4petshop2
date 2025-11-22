@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ — Часто задаваемые вопросы | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/faq.css' %}" type="text/css" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 140px;">
+    <a href="{% url 'index' %}">Главная</a> &gt; 
+    <span>FAQ</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="faq-hero">
+    <div class="container">
+        <h1 class="page-title">Часто задаваемые вопросы</h1>
+    </div>
+</div>
+
+<main class="faq-main">
+    <div class="container">
+        <div class="section-header">
+            <h2>Ответы на популярные вопросы</h2>
+        </div>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Как сделать заказ?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Выберите товары в каталоге, перейдите в корзину и оформите заказ, выбрав пункт самовывоза.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Как я могу оплатить заказ?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Оплата доступна только при получении — наличными или картой в пункте самовывоза.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Сколько времени занимает подготовка заказа?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Заказы обычно готовы к выдаче в течение 1 рабочего дня.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Могу ли я забрать заказ позже?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Ваш заказ хранится в пункте самовывоза до 5 дней с момента оформления.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Что делать, если товара нет в выбранном пункте самовывоза?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Мы уведомим вас о недоступности и предложим альтернативный пункт самовывоза.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="{% static 'js/faq.js' %}"></script>
+
+{% endblock %}

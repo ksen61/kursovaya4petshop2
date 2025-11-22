@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Контакты | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/contacts.css' %}" type="text/css" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 140px;">
+    <a href="{% url 'index' %}">Главная</a> &gt; 
+    <span>Контакты</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="contacts-hero">
+    <div class="container">
+        <h1 class="page-title">Контакты</h1>
+    </div>
+</div>
+
+<main class="contacts-main">
+    <section class="contact-info">
+        <div class="contact-card">
+            <i class="fas fa-phone-alt"></i>
+            <h3>Телефон</h3>
+            <p>+7 (495) 123-45-67</p>
+            <p>Пн-Пт: 9:00 – 18:00</p>
+            <p>Сб-Вс: Выходной</p>
+        </div>
+        <div class="contact-card">
+            <i class="fas fa-envelope"></i>
+            <h3>Email</h3>
+            <p>support@yesofkus.com</p>
+            <p>Ответим в течение рабочего дня</p>
+        </div>
+        <div class="contact-card">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Главный офис</h3>
+            <p>г. Москва, ул. Примерная, д.12, офис 345</p>
+        </div>
+    </section>
+</main>
+{% endblock %}

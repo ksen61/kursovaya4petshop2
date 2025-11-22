@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Самовывоз и оплата | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/delivery.css' %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 0px;">
+    <div class="container">
+        <a href="{% url 'index' %}">Главная</a> &gt; 
+        <span>Самовывоз и оплата</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="delivery-hero">
+    <div class="container">
+        <h1 class="page-title">Самовывоз и оплата</h1>
+    </div>
+</div>
+
+<main class="delivery-main">
+    <section class="delivery-section delivery-methods">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-store"></i>
+                <h2>Как получить заказ</h2>
+            </div>
+            <div class="delivery-cards">
+                <div class="delivery-card">
+                    <div class="card-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3>Пункты выдачи Yes of Кусь</h3>
+                    <p>При оформлении заказа выберите удобный для вас пункт самовывоза</p>
+                </div>
+                <div class="delivery-card">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Сроки подготовки</h3>
+                    <p>Обычно заказы готовы к выдаче в течение 1 рабочего дня</p>
+                </div>
+                <div class="delivery-card">
+                    <div class="card-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3>Хранение заказа</h3>
+                    <p>Мы храним ваш заказ в пункте самовывоза до 5 дней</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="delivery-section payment-section">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-credit-card"></i>
+                <h2>Оплата</h2>
+            </div>
+            <div class="payment-methods">
+                <div class="payment-method">
+                    <div class="payment-icon">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <h3>Оплата при получении</h3>
+                    <p>Вы оплачиваете заказ в пункте выдачи — наличными или банковской картой</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="delivery-section help-section">
+        <div class="container">
+            <div class="help-content">
+                <div class="help-text">
+                    <h2>Остались вопросы?</h2>
+                    <p>Наша служба поддержки поможет с выбором пункта самовывоза и уточнит детали оплаты</p>
+                    <a href="{% url 'contacts' %}" class="help-button">
+                        <i class="fas fa-phone-alt"></i> Связаться с нами
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

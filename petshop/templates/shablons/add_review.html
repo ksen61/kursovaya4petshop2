@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оставить отзыв | {{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/review.css' %}">
+<link rel="stylesheet" href="{% static 'style/addreview.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container1">
+    <div class="review-card">
+        <h2 class="review-title">Оставить отзыв</h2>
+
+        <form method="post" id="review-form">
+            {% csrf_token %}
+            <label>Рейтинг (1-5)</label>
+            <input type="number" name="rating" id="rating" min="1" max="5" required>
+            
+            <label>Текст отзыва</label>
+            <textarea name="text" id="text" required></textarea>
+            
+            {% if error %}
+                <div class="alert">{{ error }}</div>
+            {% endif %}
+            
+            <button type="submit">Отправить отзыв</button>
+        </form>
+    </div>
+</div>
+
+<script>
+const productId = {{ product.id }};
+const form = document.getElementById('review-form');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rating = document.getElementById('rating').value;
+    const text = document.getElementById('text').value;
+
+    const response = await fetch(`http://127.0.0.1:8000/api/reviews/add/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ rating, text })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert("Отзыв отправлен!");
+        window.location.href = `/product/${productId}/`;
+    } else {
+        alert("Ошибка: " + (data.error || 'Неизвестная ошибка'));
+    }
+});
+</script>
+{% endblock %}

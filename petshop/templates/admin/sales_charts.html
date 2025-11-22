@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% load custom_tags %}
+
+{% block title %}Админ: Диаграммы продаж{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/salescharts.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<div class="summary-header">
+    <a href="{% url 'admin_reports' %}" class="back-link"><i class="fas fa-arrow-left"></i> Назад</a>
+    <h1>Диаграммы продаж</h1>
+</div>
+
+<div class="loading" id="loading">
+    <i class="fas fa-spinner fa-spin"></i> Загрузка данных диаграмм...
+</div>
+
+<div id="chartsContent" style="display: none;">
+    <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="monthChart"></canvas>
+    </div>
+</div>
+
+<div id="errorMessage" class="error-message" style="display: none;">
+    <i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const userDateFormat = "{{ request.user.profile.date_format|escapejs }}";
+
+    function formatDateByProfile(dateStr) {
+        const date = new Date(dateStr); 
+        if (isNaN(date)) return dateStr;
+
+        const day = ('0' + date.getDate()).slice(-2);
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const year = date.getFullYear();
+
+        switch(userDateFormat) {
+            case "%d.%m.%Y":
+                return `${day}.${month}.${year}`;
+            case "%Y.%m.%d":
+                return `${year}.${month}.${day}`;
+            case "%m/%d/%Y":
+                return `${month}/${day}/${year}`;
+            default:
+                return `${day}.${month}.${year}`;
+        }
+    }
+
+    async function loadChartsData() {
+        try {
+            const response = await fetch('/api/charts-data/', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    {% if user.is_authenticated %}
+                    'X-CSRFToken': '{{ csrf_token }}'
+                    {% endif %}
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Ошибка загрузки данных');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    }
+
+    function getChartTextColor() {
+        return getComputedStyle(document.body).getPropertyValue('--chart-text-color').trim();
+    }
+    
+    
+    
+    function createCharts(data) {
+        const textColor = getChartTextColor();
+    
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('chartsContent').style.display = 'block';
+    
+        const categoryData = data.category_data;
+        const monthData = data.month_data;
+    
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryData.map(d => d.category),
+                datasets: [{
+                    label: 'Продажи по категориям',
+                    data: categoryData.map(d => d.total_sales),
+                    backgroundColor: 'rgba(44, 62, 34, 0.7)',
+                    borderColor: 'rgba(44, 62, 34, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Продажи по категориям', color: textColor },
+                    legend: { labels: { color: textColor } }
+                },
+                scales: {
+                    x: { ticks: { color: textColor } },
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { color: textColor },
+                        title: { display: true, text: 'Сумма продаж', color: textColor }
+                    }
+                }
+            }
+        });
+    
+        new Chart(document.getElementById('monthChart'), {
+            type: 'line',
+            data: {
+                labels: monthData.map(d => formatDateByProfile(d.month)),
+                datasets: [{
+                    label: 'Продажи по месяцам',
+                    data: monthData.map(d => d.total_sales),
+                    backgroundColor: 'rgba(52, 152, 219, 0.3)',
+                    borderColor: 'rgba(41, 128, 185, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Динамика продаж по месяцам', color: textColor },
+                    legend: { labels: { color: textColor } }
+                },
+                scales: {
+                    x: { ticks: { color: textColor } },
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { color: textColor },
+                        title: { display: true, text: 'Сумма продаж', color: textColor }
+                    }
+                }
+            }
+        });
+    }
+    
+
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('errorText').textContent = message;
+        document.getElementById('errorMessage').style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const data = await loadChartsData();
+            createCharts(data);
+        } catch (error) {
+            showError('Ошибка при загрузке данных: ' + error.message);
+        }
+    });
+</script>
+
+{% endblock %}

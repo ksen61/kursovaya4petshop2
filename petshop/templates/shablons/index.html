@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yes of Кусь - Премиум товары для питомцев{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/quiz.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'style/index.css' %}" type="text/css"/>
+
+{% endblock %}
+{% block content %}
+<main class="main">
+    <div class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Лучшее для ваших питомцев</h1>
+                <p class="hero-subtitle">Качественные корма, стильные аксессуары и заботливые товары для здоровья ваших любимцев</p>
+                <a href="/catalog/" class="btn"><i class="fas fa-paw"></i> В каталог</a>
+            </div>
+        </section>
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-store"></i></div>
+                <h3 class="feature-title">Удобный самовывоз</h3>
+                <p class="feature-text">Забирайте заказ в ближайшем пункте нашего магазина — быстро и без ожидания.</p>
+            </div>
+        
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-certificate"></i></div>
+                <h3 class="feature-title">Гарантия качества</h3>
+                <p class="feature-text">Каждый товар проходит строгий контроль и хранится в идеальных условиях.</p>
+            </div>
+        
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-paw"></i></div>
+                <h3 class="feature-title">Забота о питомцах</h3>
+                <p class="feature-text">Мы подбираем только те товары, которые безопасны и полезны для ваших любимцев.</p>
+            </div>
+        </section>        
+        <section class="quiz-section">
+            <div class="quiz">
+                <h2 class="quiz-title">Подберите товары для вашего питомца</h2>
+                <div id="quizForm" class="quiz-form">
+            
+                    <div class="quiz-step">
+                        <h3>1. Какое у вас животное?</h3>
+                        <div class="options">
+                            {% for s in all_species %}
+                                <button type="button" class="option-btn" data-name="species" data-value="{{ s.id }}">{{ s.species_name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="quiz-step">
+                        <h3>2. Возрастная категория</h3>
+                        <div class="options">
+                            {% for a in all_ages %}
+                                <button type="button" class="option-btn" data-name="age" data-value="{{ a.id }}">{{ a.age_name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="quiz-step">
+                        <h3>3. Что вас интересует?</h3>
+                        <div class="options">
+                            {% for c in all_categories %}
+                                <button type="button" class="option-btn" data-name="category" data-value="{{ c.id }}">{{ c.name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="quiz-step">
+                        <h3>4. Тип интересующего товара</h3>
+                        <div class="options">
+                            {% for t in all_types %}
+                                <button type="button" class="option-btn" data-name="type" data-value="{{ t.id }}">{{ t.type_name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="quiz-step">
+                        <h3>5. Особые потребности</h3>
+                        <div class="options">
+                            {% for p in all_purposes %}
+                                <button type="button" class="option-btn" data-name="purpose" data-value="{{ p.id }}">{{ p.purpose_name }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="quiz-navigation">
+                        <button type="button" id="prevStep" class="nav-btn">Назад</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="products-grid" class="products-grid"></section>
+    </div>
+</main>
+<script>
+
+</script>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/index.js' %}" defer></script>
+{% endblock %}

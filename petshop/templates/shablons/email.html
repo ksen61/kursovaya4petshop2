@@ -1,0 +1,35 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'style/email.css' %}">
+</head>
+<body>
+<div class="email-wrapper">
+    <div class="email-header">
+        <h1>Спасибо за заказ №{{ order.id }}</h1>
+    </div>
+
+    <div class="email-body">
+        <p>Здравствуйте, <strong>{{ order.first_name }}</strong>!</p>
+        <p>Ваш заказ был успешно оформлен. Мы уже начали его обработку и скоро свяжемся с вами при необходимости.</p>
+
+        <h2 style="margin-top: 30px;">Детали заказа:</h2>
+        <ul class="order-items">
+            {% for item in order.items.all %}
+            <li class="order-item">
+                <span>{{ item.quantity }}× {{ item.product.name }}</span>
+                <span>{{ item.quantity|floatformat:2|add:""|floatformat:2 }} ₽</span>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="order-total">
+            <strong>Итоговая сумма:</strong> {{ order.total_price|floatformat:2 }} ₽
+        </div>
+    </div>
+</div>
+</body>
+</html>

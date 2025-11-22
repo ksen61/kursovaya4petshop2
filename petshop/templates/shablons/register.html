@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/profile.css' %}" type="text/css"/>
+<style>
+.error-message {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 2px;
+}
+.phone-input-container {
+    position: relative;
+}
+.phone-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+    z-index: 2;
+}
+.phone-input {
+    padding-left: 40px !important;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="margin: 40px 0 0 220px;">
+    <a href="{% url 'index' %}">Главная</a> &gt;
+    <span>Регистрация</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Создать аккаунт</h1>
+            <p>Заполните форму для регистрации</p>
+        </div>
+        
+        <form id="register-form" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+                <div class="error-message" id="error-email"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" name="first_name">
+                <div class="error-message" id="error-first_name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Фамилия</label>
+                <input type="text" name="last_name">
+                <div class="error-message" id="error-last_name"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Телефон</label>
+                <div class="phone-input-container">
+                    <span class="phone-prefix">+7</span>
+                    <input type="text" name="phone" class="phone-input" placeholder="(999) 123-45-67" maxlength="15">
+                </div>
+                <div class="error-message" id="error-phone"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Дата рождения</label>
+                <input type="date" name="date_of_birth">
+                <div class="error-message" id="error-date_of_birth"></div>
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" name="password" required minlength="8">
+            </div>
+
+            <button type="submit" class="btn-submit">Зарегистрироваться</button>
+            
+            <div class="auth-footer">
+                Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a>
+            </div>
+        </form>
+
+        <div id="register-message" class="auth-error" style="display:none;"></div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/register.js' %}"></script>
+{% endblock %}

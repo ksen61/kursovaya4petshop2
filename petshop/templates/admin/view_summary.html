@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% load custom_tags %}
+
+{% block title %}Админ: Сводные таблицы{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/viewsummary.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<div class="summary-header">
+    <a href="{% url 'admin_reports' %}" class="back-link"><i class="fas fa-arrow-left"></i> Назад</a>
+    <h1 id="pageTitle">Сводные таблицы</h1>
+</div>
+
+<div class="table-controls">
+    <button onclick="loadTableData('categories')" id="btnCategories" class="active">📊 По категориям</button>
+    <button onclick="loadTableData('months')" id="btnMonths">📅 По месяцам</button>
+    <button onclick="loadTableData('brands')" id="btnBrands">🏷️ По брендам</button>
+</div>
+
+<div class="loading" id="loading">
+    <i class="fas fa-spinner fa-spin"></i> Загрузка данных...
+</div>
+
+<div id="tableContent" style="display: none;">
+    <div class="stats-summary" id="statsSummary">
+    </div>
+    <table id="summaryTable" class="summaryTable">
+        <thead id="tableHeader" class="tableHeader">
+        </thead>
+        <tbody id="tableBody" class="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<div id="errorMessage" class="error-message" style="display: none;">
+    <i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<script>
+let userDateFormat = "%d.%m.%Y";
+
+async function loadUserSettings() {
+    try {
+        const res = await fetch('/api/profile/');
+        if(res.ok){
+            const data = await res.json();
+            if(data.date_format) userDateFormat = data.date_format;
+        }
+    } catch(err){
+        console.warn('Не удалось загрузить настройки пользователя:', err);
+    }
+}
+
+function formatDateByPattern(date, format){
+    if(!date) return '';
+    const d = dayjs(date);
+    switch(format){
+        case "%Y.%m.%d": return d.format("YYYY.MM.DD");
+        case "%m/%d/%Y": return d.format("MM/DD/YYYY");
+        default: return d.format("DD.MM.YYYY");
+    }
+}
+
+async function loadTableData(tableType) {
+    try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('tableContent').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+
+        document.querySelectorAll('.table-controls button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn' + tableType.charAt(0).toUpperCase() + tableType.slice(1)).classList.add('active');
+
+        await loadUserSettings();
+
+        const response = await fetch(`/api/summary-tables/?type=${tableType}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                {% if user.is_authenticated %}
+                'X-CSRFToken': '{{ csrf_token }}'
+                {% endif %}
+            }
+        });
+
+        const data = await response.json();
+        if(!response.ok || !data.success) throw new Error(data.error || 'Ошибка загрузки данных');
+
+        renderTable(data);
+
+    } catch (error) {
+        showError('Ошибка при загрузке данных: ' + error.message);
+    }
+}
+
+function renderTable(data) {
+    document.getElementById('pageTitle').textContent = data.title;
+
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+    const statsSummary = document.getElementById('statsSummary');
+
+    tableHeader.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    const headerRow = document.createElement('tr');
+    data.fields.forEach(field => {
+        const th = document.createElement('th');
+        th.textContent = data.column_names[field];
+        headerRow.appendChild(th);
+    });
+    tableHeader.appendChild(headerRow);
+
+    let totalOrders = 0;
+    let totalSales = 0;
+
+    data.data.forEach(row => {
+        const tr = document.createElement('tr');
+        data.fields.forEach(field => {
+            const td = document.createElement('td');
+            let value = row[field];
+    
+            if(field === 'month'){ 
+                value = formatDateByPattern(value + '-01', userDateFormat);
+            }
+    
+            else if (field === 'total_sales' && typeof value === 'number') {
+                value = value.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' ₽';
+                totalSales += row[field];
+            } else if (field === 'avg_order_value' && typeof value === 'number') {
+                value = value.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' ₽';
+            } else if (field === 'total_orders' && typeof value === 'number') {
+                totalOrders += value;
+            }
+    
+            td.textContent = value;
+            tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+    });
+    
+
+    if (totalOrders > 0 || totalSales > 0) {
+        statsSummary.innerHTML = `<strong>Общая статистика:</strong> ${totalOrders.toLocaleString('ru-RU')} заказов на сумму ${totalSales.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2})} ₽`;
+    } else {
+        statsSummary.innerHTML = '';
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('tableContent').style.display = 'block';
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('errorText').textContent = message;
+    document.getElementById('errorMessage').style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadTableData('categories');
+});
+</script>
+
+{% endblock %}

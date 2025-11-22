@@ -1,0 +1,112 @@
+:root {
+    --primary: #4A6B3D;
+    --secondary: #8B5A2B;
+    --accent: #E9A630;
+    --dark: #2C3E22;
+    --light: #F5F5F0;
+}
+
+.quiz {
+    background-color: var(--light);
+    padding: 40px 30px;
+    border-radius: 15px;
+    max-width: 700px;
+    margin: 50px auto;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    font-family: 'Rubik', sans-serif;
+    color: var(--dark);
+    border: 1px solid var(--border-color);
+}
+
+.quiz-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: var(--accent);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.quiz-step {
+    display: none;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+}
+
+.quiz-step.active {
+    display: flex;
+}
+
+.quiz-step h3 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.options {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.option-btn {
+    background-color: #fff;
+    border: 2px solid var(--accent);
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-width: 180px;
+    text-align: center;
+    user-select: none;
+}
+
+.option-btn:hover,
+.option-btn:focus {
+    background-color: var(--accent);
+    color: var(--light);
+    outline: none;
+}
+
+.option-btn.selected {
+    background-color: var(--accent);
+    color: var(--light);
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.quiz-navigation {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#prevStep,
+#nextStep {
+    background-color: var(--accent);
+    border: none;
+    padding: 14px 40px;
+    border-radius: 50px;
+    color: var(--light);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 130px;
+}
+
+#prevStep:hover,
+#nextStep:hover {
+    background-color: var(--secondary);
+}
+
+#prevStep {
+    display: none; 
+}

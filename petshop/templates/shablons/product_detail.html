@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Yes of Кусь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/product-detail.css' %}" />
+<link rel="stylesheet" href="{% static 'style/review.css' %}" />
+<link rel="stylesheet" href="{% static 'style/product.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="product-detail-wrapper">
+    <div class="product-detail-container">
+        <div class="image-section">
+            <img src="{% static 'img/default-product.png' %}" alt="Продукт">
+        </div>
+
+        <div class="info-section">
+            <h1>Загрузка...</h1>
+            <div class="average-rating"></div>
+            <div class="price"></div>
+            <div class="attributes"></div>
+            <form id="add-to-cart-form">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="add-to-cart-btn">В корзину</button>
+                <div class="max-quantity-message" style="display:none; color:red; margin-top:5px;"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="product-description">
+    <h3>Описание товара</h3>
+    <p>Загрузка...</p>
+</div>
+
+<h3 style="padding: 0 0 0 40px;">Отзывы</h3>
+<div class="reviews-list" style="padding: 0 40px;"></div>
+
+<div style="text-align: center; margin: 30px 0;">
+    {% if user.is_authenticated %}
+        <div id="review-section"></div>
+    {% else %}
+        <p><a href="{% url 'login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<script>
+    window.productId = {{ product.id }};
+    window.csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'js/product_detail.js' %}"></script>
+{% endblock %}
+    

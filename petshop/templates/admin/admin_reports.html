@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Админ: Отчеты по заказам{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'style/adminreports.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<div class="summary-header">
+    <a href="{% url 'admin_reports' %}" class="back-link"><i class="fas fa-arrow-left"></i> Назад</a>
+    <h1>Аналитика продаж</h1>
+</div>
+
+<div class="container-fluid py-4">
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-filter me-2"></i>Фильтры отчетов
+            </h6>
+        </div>
+        <div class="card-body">
+            <form id="report-form" method="get">
+                <div class="row g-4 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-chart-bar me-1"></i>Тип отчета
+                        </label>
+                        <select name="type" class="form-select" id="report-type">
+                            <option value="day">📅 За день</option>
+                            <option value="week">📆 За неделю</option>
+                            <option value="month">📊 За месяц</option>
+                            <option value="filtered">🔍 С фильтрами</option>
+                        </select>
+                    </div>
+        
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-calendar me-1"></i>Дата
+                        </label>
+                        <input 
+                            type="text" 
+                            name="date" 
+                            class="form-control" 
+                            id="report-date" 
+                            placeholder=""
+                        >
+                        <small id="date-help" class="text-muted"></small>
+                    </div>
+                    
+        
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-box me-1"></i>Товар
+                        </label>
+                        <select name="product_id" class="form-select" id="product-filter">
+                            <option value="">Все товары</option>
+                            {% for product in products %}
+                                <option value="{{ product.id }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+        
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-tags me-1"></i>Категория
+                        </label>
+                        <select name="category_id" class="form-select" id="category-filter">
+                            <option value="">Все категории</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+        
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-copyright me-1"></i>Бренд
+                        </label>
+                        <select name="brand_id" class="form-select" id="brand-filter">
+                            <option value="">Все бренды</option>
+                            {% for brand in brands %}
+                                <option value="{{ brand.id }}">{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+        
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-user me-1"></i>Пользователь
+                        </label>
+                        <select name="user_id" class="form-select" id="user-filter">
+                            <option value="">Все пользователи</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+        
+                <div class="d-flex justify-content-end mt-4 gap-3">
+                    <button type="button" id="show-btn" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Сформировать отчет
+                    </button>
+                    <button type="button" id="export-btn" class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>Экспорт CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-table me-2"></i>Результаты отчёта
+            </h6>
+            <span class="badge bg-primary" id="records-count">
+                <i class="fas fa-database me-1"></i>0 записей
+            </span>
+        </div>
+        <div class="card-body">
+            <div id="loading-spinner" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="text-muted mt-3">Загрузка данных...</p>
+            </div>
+            <div id="results-container">
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-pie fa-4x text-gray-300 mb-4"></i>
+                    <h5 class="text-muted mb-2">Данные не загружены</h5>
+                    <p class="text-muted">Используйте фильтры для отображения аналитики</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+
+<script>
+    $(document).ready(function() {
+        const API_URL = '{% url "api_orders_report" %}';
+        let dataTable = null;
+    
+        function getFormParams(exportFlag = false) {
+            const params = new URLSearchParams();
+            params.append('type', $('#report-type').val());
+            params.append('date', $('#report-date').val());
+            
+            const productId = $('#product-filter').val();
+            const categoryId = $('#category-filter').val();
+            const brandId = $('#brand-filter').val();
+            const userId = $('#user-filter').val();
+            
+            if (productId) params.append('product_id', productId);
+            if (categoryId) params.append('category_id', categoryId);
+            if (brandId) params.append('brand_id', brandId);
+            if (userId) params.append('user_id', userId);
+            
+            if (exportFlag) {
+                params.append('export', 'csv');
+            }
+            
+            return params;
+        }
+    
+        function loadData(exportMode = false) {
+            const params = getFormParams(exportMode);
+            
+            if (exportMode) {
+                window.location.href = API_URL + '?' + params.toString();
+                return;
+            }
+    
+            $('#loading-spinner').show();
+            $('#results-container').hide();
+    
+            fetch(API_URL + '?' + params.toString())
+                .then(response => {
+                    if (!response.ok) throw new Error('Ошибка загрузки данных');
+                    return response.json();
+                })
+                .then(responseData => {
+                    displayData(responseData.data, responseData.columns, responseData.report_type);
+                    $('#records-count').html(`<i class="fas fa-database me-1"></i>${responseData.total_count} записей`);
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    $('#results-container').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Произошла ошибка при загрузке данных
+                        </div>
+                    `).show();
+                })
+                .finally(() => {
+                    $('#loading-spinner').hide();
+                    $('#results-container').show();
+                });
+        }
+    
+        function displayData(data, columns, reportType) {
+            if (!data || data.length === 0) {
+                $('#results-container').html(`
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-gray-300 mb-4"></i>
+                        <h5 class="text-muted mb-2">Нет данных для отображения</h5>
+                        <p class="text-muted">Попробуйте изменить параметры фильтров</p>
+                    </div>
+                `);
+                return;
+            }
+    
+            const headers = Object.keys(columns);
+            const columnNames = columns;
+            const reportTypeName = getReportTypeName(reportType);
+    
+            let tableHTML = `
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-chart-bar fa-lg me-3"></i>
+                        <div>
+                            <strong class="d-block">Тип отчета: ${reportTypeName}</strong>
+                            <small class="d-block mt-1">Колонок: ${headers.length} | Записей: ${data.length}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped" id="dataTable">
+                        <thead>
+                            <tr>
+                                ${headers.map(col => 
+                                    `<th class="text-nowrap">${columnNames[col]}</th>`
+                                ).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(row => `
+                                <tr>
+                                    ${headers.map(col => 
+                                        `<td>${row[col] || '<span class="text-muted">-</span>'}</td>`
+                                    ).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+    
+            $('#results-container').html(tableHTML);
+    
+            if ($.fn.DataTable && $('#dataTable').length) {
+                if (dataTable) {
+                    dataTable.destroy();
+                }
+                dataTable = $('#dataTable').DataTable({
+                    "pageLength": 25,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Russian.json"
+                    },
+                    "order": [[0, "asc"]],
+                    "responsive": true,
+                    "autoWidth": false,
+                    "dom": '<"top"<"d-flex justify-content-between align-items-center"flp>>rt<"bottom"<"d-flex justify-content-between align-items-center"ip>><"clear">'
+                });
+            }
+        }
+    
+        function getReportTypeName(reportType) {
+            const types = {
+                'day': 'За день',
+                'week': 'За неделю', 
+                'month': 'За месяц',
+                'filtered': 'С фильтрами'
+            };
+            return types[reportType] || reportType;
+        }
+    
+        $('#show-btn').on('click', function() {
+            $(this).html('<i class="fas fa-spinner fa-spin me-2"></i>Загрузка...');
+            loadData(false);
+            setTimeout(() => {
+                $(this).html('<i class="fas fa-chart-bar me-2"></i>Сформировать отчет');
+            }, 1000);
+        });
+    
+        $('#export-btn').on('click', function() {
+            loadData(true);
+        });
+    
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.toString()) {
+            $('#report-type').val(urlParams.get('type') || 'day');
+            $('#report-date').val(urlParams.get('date') || '');
+            $('#product-filter').val(urlParams.get('product_id') || '');
+            $('#category-filter').val(urlParams.get('category_id') || '');
+            $('#brand-filter').val(urlParams.get('brand_id') || '');
+            $('#user-filter').val(urlParams.get('user_id') || '');
+            
+            setTimeout(() => loadData(false), 500);
+        }
+    
+        $('#report-type').on('change', function() {
+            if ($('#report-date').val()) {
+                setTimeout(() => loadData(false), 300);
+            }
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateFormat = "{{ request.user.profile.date_format|default:'%Y.%m.%d'|escapejs }}";
+        const dateInput = document.getElementById('report-date');
+        const dateHelp = document.getElementById('date-help');
+        const showBtn = document.getElementById('show-btn');
+    
+        let placeholder = '';
+        let regexPattern;
+    
+        switch(dateFormat) {
+            case '%d.%m.%Y':
+                placeholder = 'ДД.ММ.ГГГГ';
+                regexPattern = /^\d{2}\.\d{2}\.\d{4}$/;
+                break;
+            case '%Y.%m.%d':
+                placeholder = 'ГГГГ.ММ.ДД';
+                regexPattern = /^\d{4}\.\d{2}\.\d{2}$/;
+                break;
+            case '%m/%d/%Y':
+                placeholder = 'ММ/ДД/ГГГГ';
+                regexPattern = /^\d{2}\/\d{2}\/\d{4}$/;
+                break;
+            default:
+                placeholder = 'ДД.ММ.ГГГГ';
+                regexPattern = /^\d{2}\.\d{2}\.\д{4}$/;
+        }
+    
+        dateInput.placeholder = placeholder;
+        dateHelp.textContent = `Формат даты: ${placeholder}`;
+    
+        dateInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val === '') {
+                this.classList.remove('is-invalid', 'is-valid');
+                return;
+            }
+            if (!regexPattern.test(val)) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+            }
+        });
+    
+        showBtn.addEventListener('click', function(e) {
+            const val = dateInput.value.trim();
+            if (val && !regexPattern.test(val)) {
+                e.preventDefault();
+                alert(`Введите дату в формате: ${placeholder}`);
+                dateInput.focus();
+                return;
+            }
+        
+            if (val) {
+                let parts;
+                let inputDate;
+                switch(dateFormat) {
+                    case '%d.%m.%Y':
+                        parts = val.split('.');
+                        inputDate = new Date(parts[2], parts[1]-1, parts[0]);
+                        break;
+                    case '%Y.%m.%d':
+                        parts = val.split('.');
+                        inputDate = new Date(parts[0], parts[1]-1, parts[2]);
+                        break;
+                    case '%m/%d/%Y':
+                        parts = val.split('/');
+                        inputDate = new Date(parts[2], parts[0]-1, parts[1]);
+                        break;
+                    default:
+                        parts = val.split('.');
+                        inputDate = new Date(parts[2], parts[1]-1, parts[0]);
+                }
+        
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                if (inputDate > today) {
+                    e.preventDefault();
+                    alert('Дата не может быть в будущем!');
+                    dateInput.focus();
+                    return;
+                }
+            }
+        
+            $(this).html('<i class="fas fa-spinner fa-spin me-2"></i>Загрузка...');
+            loadData(false);
+            setTimeout(() => {
+                $(this).html('<i class="fas fa-chart-bar me-2"></i>Сформировать отчет');
+            }, 1000);
+        });
+        
+    });
+    
+</script>
+{% endblock %}
